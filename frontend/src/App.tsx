@@ -8,7 +8,6 @@ function App() {
   const [steps, setSteps] = useState<StepData[]>([]);
   const [loading, setLoading] = useState(false);
   const [resultTitle, setResultTitle] = useState('');
-  const [isDemo, setIsDemo] = useState(false);
   const [error, setError] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
 
@@ -18,14 +17,15 @@ function App() {
       setResultTitle(firstResult.title);
       setSourceUrl(firstResult.source_url);
       setSteps(firstResult.steps);
-      setIsDemo(result.is_demo);
+      setError('');
     } else {
       setResultTitle('');
       setSourceUrl('');
       setSteps([]);
-      setIsDemo(false);
     }
-    setError(result.error || '');
+    if (result.error) {
+      setError(result.error);
+    }
   };
 
   const handleError = (msg: string) => {
@@ -42,7 +42,6 @@ function App() {
         />
       </header>
       <main className="app__flow-section">
-        {/* 错误提示 */}
         {error && !loading && (
           <div className="app__error-bar">
             <span className="app__error-icon">!</span>
@@ -50,22 +49,19 @@ function App() {
           </div>
         )}
 
-        {/* 加载遮罩 */}
         {loading && (
           <div className="app__loading-overlay">
             <div className="app__loading-spinner" />
-            <p>正在分解折纸步骤...</p>
+            <p>正在搜索并分解折纸步骤...</p>
           </div>
         )}
 
-        {/* 结果标题 */}
         {resultTitle && !loading && (
           <div className="app__result-header">
             <h3>{resultTitle}</h3>
-            {isDemo && <span className="app__demo-badge">演示数据</span>}
             {sourceUrl && (
               <a className="app__source-link" href={sourceUrl} target="_blank" rel="noopener noreferrer">
-                查看来源
+                查看原文
               </a>
             )}
           </div>

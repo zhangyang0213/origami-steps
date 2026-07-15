@@ -82,13 +82,24 @@ def _normalize_image_url(url: str) -> str:
     if not url:
         return ""
     url = url.strip()
-    skip_patterns = ["pixel", "tracker", "1x1", "spacer", "blank", "icon", "logo", "favicon", "avatar"]
-    lower = url.lower()
+    # 过滤明显不是步骤图的 URL（跟踪像素、图标等）
+    # 只在文件名部分检查，避免误匹配域名
+    from urllib.parse import urlparse as _urlparse
+    url_path = _urlparse(url).path.lower()
+    skip_patterns = ["pixel", "tracker", "1x1", "spacer", "blank", "favicon", "avatar", "logo."]
     for pattern in skip_patterns:
-        if pattern in lower:
+        if pattern in url_path:
             return ""
-    if not url.startswith(("http://", "https://", "//")):
+    # 确保 URL 合法：http(s)、协议相对路径、或 data URI
+    if not url.startswith(("http://", "https://", "//", "data:")):
         return ""
+
+    # 协议相对路径补全
     if url.startswith("//"):
         url = f"https:{url}"
+
+    # data URI 保留（如 SVG 步骤图）
+    if url.startswith("data:image"):
+        return url
+
     return url

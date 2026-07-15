@@ -36,16 +36,6 @@
   flex: 1;
 }
 
-.app__demo-badge {
-  font-size: 12px;
-  padding: 2px 10px;
-  background: #fef3c7;
-  color: #92400e;
-  border-radius: 20px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 .app__source-link {
   font-size: 13px;
   color: #e8734a;

@@ -15,5 +15,4 @@ export interface SearchResponse {
   query: string;
   results: TutorialResult[];
   error: string;
-  is_demo: boolean;
 }

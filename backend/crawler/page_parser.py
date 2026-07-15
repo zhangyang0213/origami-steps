@@ -107,7 +107,14 @@ def _parse_step_element(elem: Tag, step_num: int, base_url: str) -> dict | None:
     img_url = ""
     img_tag = elem.find("img")
     if img_tag:
-        src = img_tag.get("src") or img_tag.get("data-src") or img_tag.get("data-lazy-src") or ""
+        # 优先级: data-lazy-src > data-src > src
+        src = (img_tag.get("data-lazy-src")
+               or img_tag.get("data-src")
+               or img_tag.get("src")
+               or "")
+        # 跳过懒加载占位 SVG（没有实际内容的 data:image SVG）
+        if src.startswith("data:image/svg") and len(src) < 500:
+            src = ""
         if src:
             img_url = urljoin(base_url, src)
 
@@ -152,13 +159,17 @@ def _fallback_extract(soup: BeautifulSoup, base_url: str) -> list[dict]:
             continue
 
         if child.name == "img":
-            src = child.get("src") or child.get("data-src") or ""
+            src = (child.get("data-lazy-src") or child.get("data-src") or child.get("src") or "")
+            if src.startswith("data:image/svg") and len(src) < 500:
+                src = ""
             if src:
                 current_img = urljoin(base_url, src)
         elif child.name == "figure":
             img_tag = child.find("img")
             if img_tag:
-                src = img_tag.get("src") or img_tag.get("data-src") or ""
+                src = (img_tag.get("data-lazy-src") or img_tag.get("data-src") or img_tag.get("src") or "")
+                if src.startswith("data:image/svg") and len(src) < 500:
+                    src = ""
                 if src:
                     current_img = urljoin(base_url, src)
             caption = child.find("figcaption")
