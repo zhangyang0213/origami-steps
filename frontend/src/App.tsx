@@ -60,7 +60,12 @@ function App() {
           <div className="app__result-header">
             <h3>{resultTitle}</h3>
             {sourceUrl && (
-              <a className="app__source-link" href={sourceUrl} target="_blank" rel="noopener noreferrer">
+              <a
+                className="app__source-link"
+                href={`/api/proxy/page?url=${encodeURIComponent(sourceUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 查看原文
               </a>
             )}

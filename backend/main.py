@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 
 from ai.extractor import extract_steps
 from config import settings
@@ -161,3 +162,59 @@ def _clean_filename_hint(hint: str) -> str:
     noise_words = {"img", "image", "photo", "pic", "picture", "copy", "screen", "shot"}
     hint = " ".join(w for w in hint.split() if w.lower() not in noise_words)
     return hint
+
+
+# ---------------------------------------------------------------------------
+# 图片代理 — 解决浏览器直接访问 origami.me 图片被拦截的问题
+# ---------------------------------------------------------------------------
+import requests as _requests
+
+@app.get("/api/proxy/image")
+async def proxy_image(url: str = ""):
+    """代理图片请求，解决跨域和防盗链问题"""
+    if not url or not url.startswith("http"):
+        return RedirectResponse(url="/")
+
+    try:
+        resp = _requests.get(url, headers={
+            "User-Agent": settings.user_agent,
+            "Referer": "https://origami.me/",
+        }, timeout=15, stream=True)
+        resp.raise_for_status()
+
+        content_type = resp.headers.get("Content-Type", "image/jpeg")
+        return StreamingResponse(
+            resp.iter_content(chunk_size=8192),
+            media_type=content_type,
+            headers={"Cache-Control": "public, max-age=3600"},
+        )
+    except Exception as exc:
+        logger.warning("图片代理失败 %s: %s", url, exc)
+        return RedirectResponse(url="/")
+
+
+# ---------------------------------------------------------------------------
+# 页面代理 — 让"查看原文"能正常打开
+# ---------------------------------------------------------------------------
+@app.get("/api/proxy/page", response_class=HTMLResponse)
+async def proxy_page(url: str = ""):
+    """代理教程页面，解决用户浏览器无法直接访问的问题"""
+    if not url or not url.startswith("http"):
+        return HTMLResponse("<html><body><h3>无效链接</h3></body></html>")
+
+    try:
+        resp = _requests.get(url, headers={
+            "User-Agent": settings.user_agent,
+            "Accept": "text/html",
+        }, timeout=15)
+        resp.raise_for_status()
+
+        html = resp.text
+        # 注入 base 标签让相对路径资源能正常加载
+        if "<head>" in html:
+            html = html.replace("<head>", f'<head><base href="{url}">')
+
+        return HTMLResponse(content=html)
+    except Exception as exc:
+        logger.warning("页面代理失败 %s: %s", url, exc)
+        return HTMLResponse(f"<html><body><h3>无法加载页面</h3><p>原链接: <a href='{url}' target='_blank'>{url}</a></p></body></html>")

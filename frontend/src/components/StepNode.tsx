@@ -4,8 +4,11 @@ import './StepNode.css';
 
 function StepNode({ data }: NodeProps<{ step: StepData }>) {
   const { step } = data;
-  // 判断图片类型：SVG data URI 或普通 URL
-  const hasImage = step.image_url && (step.image_url.startsWith('data:image') || step.image_url.startsWith('http'));
+  // 图片代理：通过后端代理加载，避免跨域/防盗链问题
+  const proxyImageUrl = step.image_url
+    ? `/api/proxy/image?url=${encodeURIComponent(step.image_url)}`
+    : '';
+  const hasImage = !!proxyImageUrl;
 
   return (
     <div className="step-node">
@@ -14,8 +17,9 @@ function StepNode({ data }: NodeProps<{ step: StepData }>) {
       <div className="step-node__image">
         {hasImage ? (
           <img
-            src={step.image_url}
+            src={proxyImageUrl}
             alt={step.title || `步骤${step.step_number}`}
+            loading="lazy"
           />
         ) : (
           <div className="step-node__placeholder">
