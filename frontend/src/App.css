@@ -1,0 +1,95 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #faf6f0;
+}
+
+.app__input-section {
+  flex-shrink: 0;
+  padding: 20px 24px;
+}
+
+.app__flow-section {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.app__result-header {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.6);
+  border-bottom: 1px solid #e8ddd0;
+}
+
+.app__result-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #3d2c1e;
+}
+
+/* 加载遮罩 */
+.app__loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(250, 246, 240, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  gap: 16px;
+}
+
+.app__loading-overlay p {
+  color: #8a7660;
+  font-size: 14px;
+}
+
+.app__loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e8ddd0;
+  border-top-color: #e8734a;
+  border-radius: 50%;
+  animation: app-spin 0.8s linear infinite;
+}
+
+@keyframes app-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 流程图容器 */
+.flowchart-container {
+  flex: 1;
+  min-height: 400px;
+}
+
+.flowchart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #b8a898;
+  font-size: 16px;
+}
+
+.flowchart-empty p {
+  margin: 0;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .app__input-section {
+    padding: 16px;
+  }
+
+  .app__result-header {
+    padding: 10px 16px;
+  }
+}
